@@ -51,6 +51,27 @@
             cursor: pointer;
         }
 
+        #xp-container {
+            width: 80%;
+            margin: 20px auto;
+            text-align: center;
+        }
+
+        #xp-bar {
+            background-color: grey;
+            height: 20px;
+            width: 100%;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        #xp-fill {
+            background-color: green;
+            height: 100%;
+            width: 0%;
+            transition: width 0.4s;
+        }
+
         
     </style>
 </head>
@@ -62,9 +83,50 @@
         <input type="text" id="habitInput" placeholder="e.g Study for 30 mins"/>
         <button onclick="addHabit()">Add Habit</button> 
 
+        <div id="xp-container">
+            <p> XP: <span id="xp-value">0</span> / 100</p>
+            <div id="xp-bar">
+                <div id="xp-fill"></div>
+            </div>
+            <p id="level-up" style="color: lime; font-weight:bold;"></p>
+        </div>
+
+
         <div id="habit-list"></div>
 
         <script>
+            /* XP Bar */
+            let xp = parseInt(localStorage.getItem("xp")) || 0; 
+            updateXPBar();
+
+
+            function toggleHabit(index) {
+                if (!habits[index].done) {
+                    xp += 10; 
+                    if (xp >= 100) {
+                        xp = 0; //reset if over or = 100 xp
+                        document.getElementById("level-up").innerText = "LEVEL Up!";
+                        setTimeout(() => {
+                            document.getElementById("level-up").innerText = "";
+                        }, 2000);
+                    }
+                } else {
+                    xp = Math.max(xp - 10, 0); // Removing a habit minuses 10 XP, but not below 0
+                }
+
+                habits[index].done = !habits[index].done; //Flipping done to not done    
+                saveHabits();
+                updateXPBar();
+                renderHabits();
+            } 
+
+            function updateXPBar() {
+                localStorage.setItem("xp", xp);
+                document.getElementById("xp-value").innerText = xp; // show num
+                document.getElementById("xp-fill").style.width = xp + "%"; //Fill bar to match XP
+            }
+
+
             const habitList = document.getElementById("habit-list");
             const username = localStorage.getItem("username") || "Adventurer";
             document.getElementById("greeting").innerText = `Welcome Player ${username.toUpperCase()}!`;
@@ -83,12 +145,6 @@
                 saveHabits(); //stores updated list in local storage
                 renderHabits(); //screen update
                 input.value = "";    //clears input box
-            }
-
-            function toggleHabit(index) {
-                habits[index].done = !habits[index].done; //switching habit's done between true/false
-                saveHabits();
-                renderHabits();
             }
 
             function deleteHabit(index) {
