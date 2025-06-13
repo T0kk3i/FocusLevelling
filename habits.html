@@ -18,11 +18,19 @@
             margin-top: 20px;
         }
 
-        input, button {
+        input {
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 10px;
+            border: none;       
+        }
+
+        button {
             padding: 10px;
             font-size: 16px;
             border-radius: 10px;
             border: none;
+            cursor: pointer;
         }
         .habit {
             padding: 10px;
@@ -72,7 +80,15 @@
             transition: width 0.4s;
         }
 
-        
+        #aibutton {
+            color: white;
+            background-color: #444;
+            font-size: 12px;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 6px;
+
+        }
     </style>
 </head>
 
@@ -81,7 +97,9 @@
         <h1 id="greeting"></h1>
         <p>Add a habit to track:</p>
         <input type="text" id="habitInput" placeholder="e.g Study for 30 mins"/>
-        <button onclick="addHabit()">Add Habit</button> 
+        <button cursor="pointer" onclick="addHabit()">Add Habit</button>
+        <br><br>
+        <button id="aibutton" onclick="startAISetup()">Need Help? Click Me!</button>
 
         <div id="xp-container">
             <p> XP: <span id="xp-value">0</span> / 100</p>
@@ -189,6 +207,32 @@
                 });
             }
 
+            //"AI JS"
+            function startAISetup() {
+                const userGoal = prompt("What are your current goals right now?");
+                if (!userGoal) return;
+                
+                const goal = userGoal.toLowerCase();
+                const suggestions = [];
+
+                if ((goal.includes("study")) || goal.includes("studying")) suggestions.push("Study for 30 mins");
+                if ((goal.includes("gym")) || goal.includes("gyming")) suggestions.push("Gym 1 hour");
+                if ((goal.includes("read")) || goal.includes("reading")) suggestions.push("Read 10 pages");
+
+                if (suggestions.length == 0) {
+                    alert("Sorry, I didn't detect any goals. Try again with specific terms: like gym/study/read");
+                    return;
+                }
+
+                    suggestions.forEach(habit =>{
+                        habits.push({ text: habit, done: false});
+                    });
+
+                    saveHabits();
+                    renderHabits();
+                    alert("Starter Habits Have Been Added Based on Goals!");
+
+            }
     </script>
 </body>
 </html>
