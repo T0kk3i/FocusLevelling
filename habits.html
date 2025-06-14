@@ -165,6 +165,7 @@
     </div>
 </div>
 
+
 <div id="main-content">
 
     <h1 id="greeting"></h1>
@@ -192,9 +193,13 @@
 </div>
 
 <script>
+
     
     /* XP Bar */
     let xp = parseInt(localStorage.getItem("xp")) || 0; 
+    let currentRankIndex = parseInt(localStorage.getItem("rankIndex") || 0);
+    const ranks = ["E", "D", "C", "B", "A", "S", "SS"];
+
     updateXPBar();
 
 
@@ -204,9 +209,9 @@
 
         if (!habits[index].done) {
             xp += xpGain;
-            if (xp >= 100) {
-                xp = 0; //reset if over or = 100 xp
-                document.getElementById("level-up").innerText = "LEVEL Up!";
+            if (Math.floor(xp / 100)> currentRankIndex) {
+                currentRankIndex = Math.min(currentRankIndex + 1, ranks.length -1);
+                document.getElementById("level-up").innerText = `LEVEL Up! You are now Rank ${ranks[currentRankIndex]}`;
                 setTimeout(() => {
                     document.getElementById("level-up").innerText = "";
                 }, 2000);
@@ -223,9 +228,12 @@
 
     function updateXPBar() {
         localStorage.setItem("xp", xp);
+        localStorage.setItem("rankIndex", currentRankIndex);
+
         document.getElementById("xp-value").innerText = xp; // show num
         document.getElementById("xp-fill").style.width = xp + "%"; //Fill bar to match XP
         document.getElementById("sidebar-xp").innerText = xp;
+        document.getElementById("sidebar-level").innerText = ranks[currentRankIndex];
     }
 
 
