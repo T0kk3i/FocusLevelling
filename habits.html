@@ -94,168 +94,244 @@
             border-radius: 10px;
             padding: 5px;
         }
+
+        #topbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #1a1a2e;
+            padding: 10px 0px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-left: 20px;
+            z-index: 1000;
+        }
+        
+        #topbar nav a{
+            margin: 0 15px;
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        #container {
+            display: flex;
+            margin-top: 70px;
+
+        }
+
+        #sidebar {
+            width: 200px;
+            background-color: #1f1f2f;
+            padding: 20px;
+            color: white;
+            text-align: left;
+            height: 100vh;
+            position: fixed;
+            top: 70px;
+            left: 0;
+        }
+
+        #main-content {
+            margin-left: 220px; 
+            padding: 20px;
+            flex-grow: 1;
+        }
     </style>
 </head>
 
 <body>
 
-        <h1 id="greeting"></h1>
-        <p>Add a habit to track:</p>
-        <input type="text" id="habitInput" placeholder="e.g Study for 30 mins"/>
-        <button cursor="pointer" onclick="addHabit()">Add Habit</button>
-            <select id="difficultySelect">
-                <Option value="easy"> 🟢Easy (10xp) </Option>
-                <option value="medium">🟡Medium (20xp) </option>
-                <option value="hard">🔴Hard (30xp) </option>
-            </select>        
-        <br><br>
-        <button id="aibutton" onclick="startAISetup()">Need Help? Click Me!</button>
+<div id="topbar">
+  <div style="display: flex; align-items: center; gap: 40px; padding-left: 20px;">
+    <h2>Focus Leveling</h2>
+    <nav>
+      <a href="#">Home</a>
+      <a href="#">Skill Tree</a>
+      <a href="#">Leaderboard</a>
+      <a href="#">Settings</a>
+    </nav>
+  </div>
+</div>
 
-        <div id="xp-container">
-            <p> XP: <span id="xp-value">0</span> / 100</p>
-            <div id="xp-bar">
-                <div id="xp-fill"></div>
-            </div>
-            <p id="level-up" style="color: lime; font-weight:bold;"></p>
+
+
+<div id="container">
+    <div id="sidebar">
+        <p>Player <strong id="sidebar-name"></strong></p>
+        <p>XP: <span id="sidebar-xp">0</span>/100</p>
+        <p>Rank:<span id="sidebar-level">E</span></p>
+    </div>
+</div>
+
+<div id="main-content">
+
+    <h1 id="greeting"></h1>
+    <p>Add a habit to track:</p>
+    <input type="text" id="habitInput" placeholder="e.g Study for 30 mins"/>
+    <button cursor="pointer" onclick="addHabit()">Add Habit</button>
+        <select id="difficultySelect">
+            <Option value="easy"> 🟢Easy </Option>
+            <option value="medium">🟡Medium</option>
+            <option value="hard">🔴Hard </option>
+        </select>        
+    <br><br>
+    <button id="aibutton" onclick="startAISetup()">Need Help? Click Me!</button>
+
+    <div id="xp-container">
+        <p> XP: <span id="xp-value">0</span> / 100</p>
+        <div id="xp-bar">
+            <div id="xp-fill"></div>
         </div>
+        <p id="level-up" style="color: lime; font-weight:bold;"></p>
+    </div>
+
+    <div id="habit-list"></div>
+
+</div>
+
+<script>
+    
+    /* XP Bar */
+    let xp = parseInt(localStorage.getItem("xp")) || 0; 
+    updateXPBar();
 
 
-        <div id="habit-list"></div>
+    function toggleHabit(index) {
+        const difficulty = habits[index].difficulty || "medium";
+        const xpGain = difficulty == "easy" ? 10 : difficulty == "hard" ? 30: 20;
 
-        <script>
-            /* XP Bar */
-            let xp = parseInt(localStorage.getItem("xp")) || 0; 
-            updateXPBar();
+        if (!habits[index].done) {
+            xp += xpGain;
+            if (xp >= 100) {
+                xp = 0; //reset if over or = 100 xp
+                document.getElementById("level-up").innerText = "LEVEL Up!";
+                setTimeout(() => {
+                    document.getElementById("level-up").innerText = "";
+                }, 2000);
+            }
+        } else {
+            xp = Math.max(xp - xpGain, 0); // Removing a habit minuses 10 XP, but not below 0
+        }
+
+        habits[index].done = !habits[index].done; //Flipping done to not done    
+        saveHabits();
+        updateXPBar();
+        renderHabits();
+    } 
+
+    function updateXPBar() {
+        localStorage.setItem("xp", xp);
+        document.getElementById("xp-value").innerText = xp; // show num
+        document.getElementById("xp-fill").style.width = xp + "%"; //Fill bar to match XP
+        document.getElementById("sidebar-xp").innerText = xp;
+    }
 
 
-            function toggleHabit(index) {
-                const difficulty = habits[index].difficulty || "medium";
-                const xpGain = difficulty == "easy" ? 10 : difficulty == "hard" ? 30: 20;
+    const habitList = document.getElementById("habit-list");
+    const username = localStorage.getItem("username") || "Adventurer";
 
-                if (!habits[index].done) {
-                    xp += xpGain;
-                    if (xp >= 100) {
-                        xp = 0; //reset if over or = 100 xp
-                        document.getElementById("level-up").innerText = "LEVEL Up!";
-                        setTimeout(() => {
-                            document.getElementById("level-up").innerText = "";
-                        }, 2000);
-                    }
-                } else {
-                    xp = Math.max(xp - xpGain, 0); // Removing a habit minuses 10 XP, but not below 0
-                }
 
-                habits[index].done = !habits[index].done; //Flipping done to not done    
-                saveHabits();
-                updateXPBar();
-                renderHabits();
-            } 
+    document.getElementById("greeting").innerText = `Welcome Player ${username.toUpperCase()}!`;
+    document.getElementById("sidebar-name").textContent = `${username}`;
 
-            function updateXPBar() {
-                localStorage.setItem("xp", xp);
-                document.getElementById("xp-value").innerText = xp; // show num
-                document.getElementById("xp-fill").style.width = xp + "%"; //Fill bar to match XP
+    //Loading saved habits:
+    let habits = JSON.parse(localStorage.getItem("habits")) || [];
+    renderHabits();
+
+    //Ading Habits:
+    function addHabit() {
+        const input = document.getElementById("habitInput"); 
+        const habitText = input.value.trim();
+        if (habitText == "")return;
+
+
+
+        const difficulty = document.getElementById("difficultySelect").value;
+        if (!["easy", "medium", "hard"].includes(difficulty)) {
+            alert("Invalid Difficulty. Habit not addedd");
+            return;
+        }
+        habits.push({ text:habitText, done: false, difficulty});
+
+        saveHabits(); //stores updated list in local storage
+        renderHabits(); //screen update
+        input.value = "";    //clears input box
+    }
+
+    function deleteHabit(index) {
+        habits.splice(index, 1)
+        saveHabits();
+        renderHabits();
+    }
+
+    function saveHabits(){
+        localStorage.setItem("habits", JSON.stringify(habits));
+    }
+
+
+    function renderHabits(){
+        habitList.innerHTML = ""; // Clear current list
+
+        habits.forEach((habit, index) => {
+            const div = document.createElement("div");
+            div.className = "habit";
+
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.checked = habit.done;
+            checkbox.onclick = () => toggleHabit(index);
+
+            const label = document.createElement("label");
+            label.textContent = habit.text;
+            label.textContent += `[${habit.difficulty || "medium"}]`;
+
+            if (habit.done) {
+                label.style.textDecoration = "line-through";
             }
 
+            const deleteBtn = document.createElement("button");
+            deleteBtn.className = "delete";
+            deleteBtn.textContent = "Delete";
+            deleteBtn.onclick = () => deleteHabit(index);
 
-            const habitList = document.getElementById("habit-list");
-            const username = localStorage.getItem("username") || "Adventurer";
-            document.getElementById("greeting").innerText = `Welcome Player ${username.toUpperCase()}!`;
-            
-            //Loading saved habits:
-            let habits = JSON.parse(localStorage.getItem("habits")) || [];
+            div.appendChild(checkbox);
+            div.appendChild(label);
+            div.appendChild(deleteBtn);
+
+            habitList.appendChild(div);
+        });
+    }
+
+    //"AI JS"
+    function startAISetup() {
+        const userGoal = prompt("What are your current goals right now?");
+        if (!userGoal) return;
+        
+        const goal = userGoal.toLowerCase();
+        const suggestions = [];
+
+        if ((goal.includes("study")) || goal.includes("studying")) suggestions.push("Study for 30 mins");
+        if ((goal.includes("gym")) || goal.includes("gyming")) suggestions.push("Gym 1 hour");
+        if ((goal.includes("read")) || goal.includes("reading")) suggestions.push("Read 10 pages");
+
+        if (suggestions.length == 0) {
+            alert("Sorry, I didn't detect any goals. Try again with specific terms: like gym/study/read");
+            return;
+        }
+
+            suggestions.forEach(habit =>{
+                habits.push({ text: habit, done: false});
+            });
+
+            saveHabits();
             renderHabits();
+            alert("Starter Habits Have Been Added Based on Goals!");
 
-            //Ading Habits:
-            function addHabit() {
-                const input = document.getElementById("habitInput"); 
-                const habitText = input.value.trim();
-                if (habitText == "")return;
+    }
 
 
-
-                const difficulty = document.getElementById("difficultySelect").value;
-                if (!["easy", "medium", "hard", "e", "m", "h"].includes(difficulty)) {
-                    alert("Invalid Difficulty. Habit not addedd");
-                    return;
-                }
-                habits.push({ text:habitText, done: false, difficulty});
-
-                saveHabits(); //stores updated list in local storage
-                renderHabits(); //screen update
-                input.value = "";    //clears input box
-            }
-
-            function deleteHabit(index) {
-                habits.splice(index, 1)
-                saveHabits();
-                renderHabits();
-            }
-
-            function saveHabits(){
-                localStorage.setItem("habits", JSON.stringify(habits));
-            }
-
-  
-            function renderHabits(){
-                habitList.innerHTML = ""; // Clear current list
-
-                habits.forEach((habit, index) => {
-                    const div = document.createElement("div");
-                    div.className = "habit";
-
-                    const checkbox = document.createElement("input");
-                    checkbox.type = "checkbox";
-                    checkbox.checked = habit.done;
-                    checkbox.onclick = () => toggleHabit(index);
-
-                    const label = document.createElement("label");
-                    label.textContent = habit.text;
-                    label.textContent += `[${habit.difficulty || "medium"}]`;
-
-                    if (habit.done) {
-                        label.style.textDecoration = "line-through";
-                    }
-
-                    const deleteBtn = document.createElement("button");
-                    deleteBtn.className = "delete";
-                    deleteBtn.textContent = "Delete";
-                    deleteBtn.onclick = () => deleteHabit(index);
-
-                    div.appendChild(checkbox);
-                    div.appendChild(label);
-                    div.appendChild(deleteBtn);
-
-                    habitList.appendChild(div);
-                });
-            }
-
-            //"AI JS"
-            function startAISetup() {
-                const userGoal = prompt("What are your current goals right now?");
-                if (!userGoal) return;
-                
-                const goal = userGoal.toLowerCase();
-                const suggestions = [];
-
-                if ((goal.includes("study")) || goal.includes("studying")) suggestions.push("Study for 30 mins");
-                if ((goal.includes("gym")) || goal.includes("gyming")) suggestions.push("Gym 1 hour");
-                if ((goal.includes("read")) || goal.includes("reading")) suggestions.push("Read 10 pages");
-
-                if (suggestions.length == 0) {
-                    alert("Sorry, I didn't detect any goals. Try again with specific terms: like gym/study/read");
-                    return;
-                }
-
-                    suggestions.forEach(habit =>{
-                        habits.push({ text: habit, done: false});
-                    });
-
-                    saveHabits();
-                    renderHabits();
-                    alert("Starter Habits Have Been Added Based on Goals!");
-
-            }
-    </script>
+</script>
 </body>
 </html>
