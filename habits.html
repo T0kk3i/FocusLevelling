@@ -154,8 +154,65 @@
         .habit .delete {
             margin-left: auto;
         }
+
+        #ai-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(15, 15, 31, 0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        #ai-modal-content input {
+            width: 80%;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 8px;
+            border: none;
+            font-size: 16px;
+        }
+
+        #ai-modal-content button {
+            margin-top: 15px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            background-color: #00ffff;
+            color: #0f0f1f;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        #ai-close-button {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            color: white;
+            font-size: 24px;
+            border: none;
+            cursor: pointer;
+        }
+
     </style>
 </head>
+
+
+<div id="ai-modal">
+    <button onclick="closeAIModal()" id="ai-close-button">X</button>
+    <div id="ai-modal-content">
+        <h2> Focus AI Setup</h2>
+        <p>Tell me your current goals, and I'll generate some habits for you: </p>
+        <input type="text" id="ai-goal-input" placeholder="e.g Upcoming exam, more fit, finish book...">
+        <br>
+        <button onclick="handleAIModal()">Generate Habits!</button>
+    </div>
+</div>
 
 <body>
 
@@ -338,12 +395,19 @@
         });
     }
 
-    //"AI JS"
+    //AI Recommendations
     function startAISetup() {
-        const userGoal = prompt("What are your current goals right now?");
-        if (!userGoal) return;
-        
-        const goal = userGoal.toLowerCase();
+        document.getElementById("ai-modal").style.display = "flex";
+    }
+
+    function handleAIModal() {
+        const input = document.getElementById("ai-goal-input").value.trim();
+        if (!input){
+            alert("Please enter a goal first!");
+            return;
+        }        
+
+        const goal = input.toLowerCase();
         const suggestions = [];
 
         if ((goal.includes("study")) || goal.includes("studying")) suggestions.push("Study for 30 mins");
@@ -352,17 +416,20 @@
 
         if (suggestions.length == 0) {
             alert("Sorry, I didn't detect any goals. Try again with specific terms: like gym/study/read");
-            return;
-        }
-
-            suggestions.forEach(habit =>{
-                habits.push({ text: habit, done: false});
-            });
-
+        } else {
+            suggestions.forEach(habit => habits.push({ text: habit, done: false}));
             saveHabits();
             renderHabits();
             alert("Starter Habits Have Been Added Based on Goals!");
 
+            //close modal
+            document.getElementById("ai-modal").style.display= "none";
+            document.getElementById("ai-goal-input").value = "";
+        }
+    }
+
+    function closeAIModal(){
+        document.getElementById("ai-modal").style.display = "none";
     }
 
     function resetXP() {
