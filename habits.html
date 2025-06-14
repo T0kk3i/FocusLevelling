@@ -162,6 +162,7 @@
         <p>Player <strong id="sidebar-name"></strong></p>
         <p>XP: <span id="sidebar-xp">0</span>/100</p>
         <p>Rank:<span id="sidebar-level">E</span></p>
+        <button onclick="resetXP()">Reset</button>
     </div>
 </div>
 
@@ -209,7 +210,9 @@
 
         if (!habits[index].done) {
             xp += xpGain;
-            if (Math.floor(xp / 100)> currentRankIndex) {
+
+            if (xp >= 100) {
+                xp = 0
                 currentRankIndex = Math.min(currentRankIndex + 1, ranks.length -1);
                 document.getElementById("level-up").innerText = `LEVEL Up! You are now Rank ${ranks[currentRankIndex]}`;
                 setTimeout(() => {
@@ -230,9 +233,9 @@
         localStorage.setItem("xp", xp);
         localStorage.setItem("rankIndex", currentRankIndex);
 
-        document.getElementById("xp-value").innerText = xp; // show num
-        document.getElementById("xp-fill").style.width = xp + "%"; //Fill bar to match XP
-        document.getElementById("sidebar-xp").innerText = xp;
+        document.getElementById("xp-value").innerText = xp % 100; // show num
+        document.getElementById("xp-fill").style.width = (xp % 100) + "%"; //Fill bar to match XP
+        document.getElementById("sidebar-xp").innerText = xp % 100;
         document.getElementById("sidebar-level").innerText = ranks[currentRankIndex];
     }
 
@@ -337,6 +340,21 @@
             renderHabits();
             alert("Starter Habits Have Been Added Based on Goals!");
 
+    }
+
+    function resetXP() {
+        xp = 0;
+        currentRankIndex = 0;
+
+
+        localStorage.setItem("xp", xp);
+        localStorage.setItem("rankIndex", currentRankIndex);
+        
+        document.getElementById("sidebar-xp").textContent = "0";
+        document.getElementById("sidebar-level").textContent = ranks[currentRankIndex];
+        
+        updateXPBar();
+        renderHabits();
     }
 
 
