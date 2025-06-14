@@ -89,6 +89,11 @@
             border-radius: 6px;
 
         }
+
+        select {
+            border-radius: 10px;
+            padding: 5px;
+        }
     </style>
 </head>
 
@@ -98,6 +103,11 @@
         <p>Add a habit to track:</p>
         <input type="text" id="habitInput" placeholder="e.g Study for 30 mins"/>
         <button cursor="pointer" onclick="addHabit()">Add Habit</button>
+            <select id="difficultySelect">
+                <Option value="easy"> 🟢Easy (10xp) </Option>
+                <option value="medium">🟡Medium (20xp) </option>
+                <option value="hard">🔴Hard (30xp) </option>
+            </select>        
         <br><br>
         <button id="aibutton" onclick="startAISetup()">Need Help? Click Me!</button>
 
@@ -120,7 +130,7 @@
 
             function toggleHabit(index) {
                 const difficulty = habits[index].difficulty || "medium";
-                const xpGain = difficulty == "easy" ? 5 : difficulty == "hard" ? 20: 10;
+                const xpGain = difficulty == "easy" ? 10 : difficulty == "hard" ? 30: 20;
 
                 if (!habits[index].done) {
                     xp += xpGain;
@@ -162,7 +172,9 @@
                 const habitText = input.value.trim();
                 if (habitText == "")return;
 
-                const difficulty = prompt("Select Difficulty: 🟢Easy, 🟡Medium or 🔴Hard");
+
+
+                const difficulty = document.getElementById("difficultySelect").value;
                 if (!["easy", "medium", "hard", "e", "m", "h"].includes(difficulty)) {
                     alert("Invalid Difficulty. Habit not addedd");
                     return;
