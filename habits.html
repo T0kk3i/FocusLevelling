@@ -119,8 +119,11 @@
 
 
             function toggleHabit(index) {
+                const difficulty = habits[index].difficulty || "medium";
+                const xpGain = difficulty == "easy" ? 5 : difficulty == "hard" ? 20: 10;
+
                 if (!habits[index].done) {
-                    xp += 10; 
+                    xp += xpGain;
                     if (xp >= 100) {
                         xp = 0; //reset if over or = 100 xp
                         document.getElementById("level-up").innerText = "LEVEL Up!";
@@ -129,7 +132,7 @@
                         }, 2000);
                     }
                 } else {
-                    xp = Math.max(xp - 10, 0); // Removing a habit minuses 10 XP, but not below 0
+                    xp = Math.max(xp - xpGain, 0); // Removing a habit minuses 10 XP, but not below 0
                 }
 
                 habits[index].done = !habits[index].done; //Flipping done to not done    
@@ -159,7 +162,13 @@
                 const habitText = input.value.trim();
                 if (habitText == "")return;
 
-                habits.push({ text:habitText, done: false});
+                const difficulty = prompt("Select Difficulty: 🟢Easy, 🟡Medium or 🔴Hard");
+                if (!["easy", "medium", "hard", "e", "m", "h"].includes(difficulty)) {
+                    alert("Invalid Difficulty. Habit not addedd");
+                    return;
+                }
+                habits.push({ text:habitText, done: false, difficulty});
+
                 saveHabits(); //stores updated list in local storage
                 renderHabits(); //screen update
                 input.value = "";    //clears input box
@@ -190,6 +199,8 @@
 
                     const label = document.createElement("label");
                     label.textContent = habit.text;
+                    label.textContent += `[${habit.difficulty || "medium"}]`;
+
                     if (habit.done) {
                         label.style.textDecoration = "line-through";
                     }
