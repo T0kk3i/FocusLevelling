@@ -60,14 +60,48 @@
         <p id="level-up" style="color: lime; font-weight:bold;"></p>
     </div>
 
-    <h2> Daily Habits:</h2>
-    <div id="daily-habits-list"></div>
+    <div id="habit-column">
+        <div id="daily-column">
+            <h2> Daily Habits:</h2>
+            <div id="daily-habit-list"></div>
+        </div>
 
-    <h2>To-do List</h2>
-    <div id="todo-list"></div>
+        <div id="todo-column">
+            <h2>To-do List</h2>
+            <div id="todo-list"></div>
+        </div>
+    </div>
+
+
+
 
 </div>
 
 <script src="homeScript.js"></script>
+
+<div id="habit-detail-modal" style="display: none;" class="modal">
+    <div class="modal-content">
+        <button class="close-btn" onclick="closeHabitModal()" >X</button>
+
+        <h3>Set Habit Details</h3>
+        <label>Difficulty:</label><br>
+
+        <select id="modal-difficulty">
+            <option value="Easy">🟢Easy</option>
+            <option value="medium" selected>🟡Medium</option>
+            <option value="hard">🔴 Hard</option>
+        </select><br><br>
+
+        <label>Habit Type:</label>
+        <select id="modal-type">
+            <option value="daily">Daily</option>
+            <option value="todo">To-Do</option>
+        </select><br><br>
+
+        <button id="confirm-btn" onclick="confirmHabit()">Confirm</button>
+    </div>
+</div>
+
 </body>
+
 </html>
