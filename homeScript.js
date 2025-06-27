@@ -1,3 +1,12 @@
+document.addEventListener("DOMContentLoaded", function(){  
+
+    window.closeAIModal = closeAIModal;
+    window.handleAIModal = handleAIModal;
+    window.resetXP = resetXP;
+    window.addHabit = addHabit;
+    window.startAISetup = startAISetup;
+    window.closeHabitModal = closeHabitModal;
+    window.confirmHabit = confirmHabit;
     const habitList = document.getElementById("daily-habit-list");
     const dailyList = document.getElementById("daily-habit-list");
     const todoList = document.getElementById("todo-list");
@@ -269,3 +278,71 @@
             confirmHabit();
         }
     });
+
+    //Resets habit after timer 
+    function checkDailyReset(){
+        const now = new Date() // Now = current date
+        const today = now.toDateString(); //Date = String, eg. Fri Jun 27 2025
+
+        const lastReset = localStorage.getItem("lastReset") || null; //loads 
+    
+
+        if (lastReset !== today){
+            habits.forEach(habit => {
+                if(habit.type === "daily"){
+                    habit.done = false;
+                }
+            });
+
+            lastReset = today;
+            localStorage.setItem("lastReset", today);
+            saveHabits();
+            renderHabits();
+        }
+    }
+
+    function startResetCountdown() {
+        function getNextResetTime() {
+            const now = new Date();
+            const resetTime = new Date(now);
+            resetTime.setHours(24,0,0,0);
+
+            if (resetTime <= now){
+                resetTime.setDate(resetTime.getDate() + 1);
+            }
+            
+            return resetTime;
+        }
+
+        let resetTime = getNextResetTime();
+
+        function updateCountdown() {
+            const now = new Date();
+            const diff = resetTime - now;
+
+            if(diff <= 0) {
+                 checkDailyReset();
+                 resetTime = getNextResetTime();
+            }
+
+            const hours = Math.floor(diff / 1000 /60 /60);
+            const minutes = Math.floor((diff /1000 /60) % 60);
+            const seconds = Math.floor((diff / 1000) % 60);
+
+            const display = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+            const timerSpan = document.getElementById("reset-timer");
+            if(timerSpan) timerSpan.textContent = display;
+        }
+
+        function pad(num){
+            return num.toString().padStart(2, "0");
+        }
+
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+        }
+    
+    // Making Functions Global
+    checkDailyReset();
+    startResetCountdown();
+});  
