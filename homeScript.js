@@ -70,6 +70,15 @@ document.addEventListener("DOMContentLoaded", function(){
         document.getElementById("habit-detail-modal").style.display = "flex";
     }
 
+    //Stripping Habit into Parts 
+    function parseHabit(text){
+        const match = text.match(/(\d+)\s*mins?/i);
+        const duration = match ? parseInt(match[1]) : 15;
+        const base = text.replace(/for\s+\d+\s*mins?/i, "").trim();
+        return { base, duration };
+
+    }
+
     function confirmHabit(){
         const name = document.getElementById("habitInput").value.trim();
         const difficulty = document.getElementById("modal-difficulty").value;
@@ -80,8 +89,12 @@ document.addEventListener("DOMContentLoaded", function(){
             return;
         }
 
+        const { base, duration } = parseHabit(name);
+
         const newHabit = {
             text: name,
+            base: base,
+            duration: duration,
             difficulty: difficulty,
             done: false,
             type: type
@@ -174,7 +187,7 @@ document.addEventListener("DOMContentLoaded", function(){
         // Fuzzy Matching
         const fuzzyMatch = {
             study: ["study", "studying", "exam", "test", "quiz", "homework", "revise", "assignment", "paper"],
-            gym: ["gym", "workout", "running", "fitness", "training", "lift", "stronger", "gyming", "fit"],
+            gym: ["gym", "workout", "running", "fitness", "training", "lift", "stronger", "gyming", "fit", "healthier", "body"],
             read: ["read", "reading", "book", "novel"],
             sleep: ["sleep", "rest", "tired"],
             wake: ["wake", "6am"],
@@ -182,8 +195,8 @@ document.addEventListener("DOMContentLoaded", function(){
 
         for (const[habit, keywords] of Object.entries(fuzzyMatch)) {
             if (keywords.some(word => goal.includes(word))) {
-                if(habit === "study") suggestions.push("study for 30 mins");
-                if(habit === "gym") suggestions.push("Exercise for 1 Hour");
+                if(habit === "study") suggestions.push("Study (30 Mins)");
+                if(habit === "gym") suggestions.push("Exercise (60 Mins)");
                 if(habit === "read") suggestions.push("Read 10 Chapters");
                 if(habit === "wake") suggestions.push("Wake at 7am");
             }
@@ -213,8 +226,8 @@ document.addEventListener("DOMContentLoaded", function(){
     function closeHabitModal(){
         document.getElementById("habit-detail-modal").style.display = "none";
     }
-    
-    //Feedback
+
+    //1st Feedback Function
     function giveFeedback(index) {
         const response = prompt("How was the habit?");
         const habit = habits[index];
@@ -238,6 +251,7 @@ document.addEventListener("DOMContentLoaded", function(){
         saveHabits();
         renderHabits();
     }
+    window.giveFeedback = giveFeedback;
 
     function capitalize(str) {
         return str.char(0).toUpperCase() + str.slice(1);
@@ -345,4 +359,41 @@ document.addEventListener("DOMContentLoaded", function(){
     // Making Functions Global
     checkDailyReset();
     startResetCountdown();
+    
+    //2nd feedback Function (testing lol)
+    function giveFeedbackAI() {
+        console.log("Feedback Button Clicked");
+
+        habits.forEach((habit, index) => {
+            if (!habit.base || !habit.duration) return;
+
+            const response = prompt(`How was "${habit.text}"? (Easy/ Hard / Just right)`);
+            if (!response) return;
+
+            const lower = response.toLowerCase();
+
+            if (lower.includes("easy")) {
+                habit.duration = Math.min(habit.duration + 15, 120); // Max 120 mins
+            } else if (lower.includes("hard")) {
+                habit.duration = Math.max(habit.duration - 10, 5); // Min 5 mins
+            }
+
+            // Update difficulty
+            if (habit.duration <= 15) {
+                habit.difficulty = "easy";
+            } else if (habit.duration <= 30) {
+                habit.difficulty = "medium";
+            } else {
+                habit.difficulty = "hard";
+            }
+
+            // Update habit text
+            habit.text = `${habit.base} for ${habit.duration} mins`;
+        });
+
+        saveHabits();
+        renderHabits();
+        alert("Habits updated!");
+    }
+    window.giveFeedbackAI = giveFeedbackAI;
 });  

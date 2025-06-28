@@ -7,6 +7,7 @@
 
 <body>
 
+<!--AI Modal Prompt Button + Closing Button-->
 <div id="ai-modal">
     <button onclick="closeAIModal()" id="ai-close-button">X</button>
     <div id="ai-modal-content">
@@ -31,7 +32,7 @@
 </div>
 
 
-
+<!--Side Bar-->
 <div id="container">
     <div id="sidebar">
         <p>Player <strong id="sidebar-name"></strong></p>
@@ -41,16 +42,16 @@
     </div>
 </div>
 
-
+<!--Main Content-->
 <div id="main-content">
 
     <h1 id="greeting"></h1>
-    <h1 id="test"></h1>
     <p>Add a habit to track:</p>
     <input type="text" id="habitInput" placeholder="e.g Study for 30 mins"/>
     <button cursor="pointer" onclick="addHabit()">Add Habit</button>      
     <br><br>
     <button id="aibutton" onclick="startAISetup()">AI Generate Habits!</button>
+    <button onclick="giveFeedback()">Feedback</button>
 
     <div id="xp-container">
         <p> XP: <span id="xp-value">0</span> / 100</p>
@@ -78,8 +79,7 @@
 
 </div>
 
-<script src="homeScript.js"></script>
-
+<!--Pop Up Habit Details:--> 
 <div id="habit-detail-modal" style="display: none;" class="modal">
     <div class="modal-content">
         <button class="close-btn" onclick="closeHabitModal()" >X</button>
@@ -98,11 +98,11 @@
             <option value="daily">Daily</option>
             <option value="todo">To-Do</option>
         </select><br><br>
-
         <button id="confirm-btn" onclick="confirmHabit()">Confirm</button>
     </div>
 </div>
 
+<script src="homeScript.js"></script>
 </body>
 
 </html>
