@@ -192,7 +192,7 @@ document.addEventListener("DOMContentLoaded", function(){
             }
         });
     }
-    
+
     window.renderHabits = renderHabits;
 
     //AI Recommendations
@@ -366,18 +366,33 @@ document.addEventListener("DOMContentLoaded", function(){
  function checkDailyReset() {
     const now = new Date();
     const today = now.toDateString();
-
     const lastReset = localStorage.getItem("lastReset");
 
     if (lastReset !== today) {
         habits.forEach(habit => {
             if (habit.type === "daily") {
+                if(!habit.done) {
+                    const xpLoss = habit.difficulty === "easy" ? 5 :
+                                    habit.difficulty === "medium" ? 10: 15;
+                    xp -= xpLoss;
+                    if (xp < 0){
+                        if(currentRankIndex > 0){
+                            currentRankIndex--; //Rank Drop 1
+                            xp = 90; //Xp 90 full
+                            console.log(`New rank ${ranks[currentRankIndex]}`);
+                        } else {
+                            xp = 0;
+                        }
+                    }
+                    console.log(`Lost ${xpLoss} XP for missing: ${habit.text}`); //test
+                }
                 habit.done = false;
             }
         });
 
         localStorage.setItem("lastReset", today);
         saveHabits();
+        updateXPBar();
         renderHabits();
     }
 }
