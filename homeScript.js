@@ -149,18 +149,24 @@ document.addEventListener("DOMContentLoaded", function(){
                 label.style.textDecoration = "line-through";
                 label.innerHTML += " ✅";
             }
-            
-
 
             const deleteBtn = document.createElement("button");
             deleteBtn.className = "delete";
             deleteBtn.textContent = "Delete";
             deleteBtn.onclick = () => deleteHabit(index);
 
+            //New Feedback Button 
+            const feedbackBtn = document.createElement("button");
+            feedbackBtn.className = "feedback";
+            feedbackBtn.textContent = "Feedback";
+            feedbackBtn.onclick = () => giveFeedback(habits[index], index);
+
             div.appendChild(checkbox);
             div.appendChild(label);
             div.appendChild(deleteBtn);
+            div.appendChild(feedbackBtn);
 
+            //List
             if (habit.type === "todo") {
                 todoList.appendChild(div);
             } else {
@@ -195,8 +201,8 @@ document.addEventListener("DOMContentLoaded", function(){
 
         for (const[habit, keywords] of Object.entries(fuzzyMatch)) {
             if (keywords.some(word => goal.includes(word))) {
-                if(habit === "study") suggestions.push("Study (30 Mins)");
-                if(habit === "gym") suggestions.push("Exercise (60 Mins)");
+                if(habit === "study") suggestions.push("Study for 30 Mins");
+                if(habit === "gym") suggestions.push("Exercise for 60 Mins");
                 if(habit === "read") suggestions.push("Read 10 Chapters");
                 if(habit === "wake") suggestions.push("Wake at 7am");
             }
@@ -228,17 +234,33 @@ document.addEventListener("DOMContentLoaded", function(){
     }
 
     //1st Feedback Function
-    function giveFeedback(index) {
-        const response = prompt("How was the habit?");
-        const habit = habits[index];
 
-        if(!habit.duration || !habit.base) return; 
+    function giveFeedback(habit, index) {
+        console.log("GIVE FEEDBACK TRIGGERED");
+        console.log("Habit passed in:", habit);
+        console.log("Index passed in:", index);
+        console.log("Habit base:", habit.base);
+        console.log("Habit duration:", habit.duration);
+        console.log("Habit text:", habit.text);
+
+        const response = prompt("How was the habit?");
+
+        if(!habit.base || !habit.duration) {
+            const parsed = parseHabit(habit.text);
+            habit.base = parsed.base;
+            habit.duration = parsed.duration;
+        }
+        console.log("Parsed habit:", habit.base, habit.duration);
+
+
+        //Duration Updating
         if(response.toLowerCase().includes("hard")){
-            habit.duration = Math.max(habit.duration - 10, 5);
+            habit.duration = Math.max(habit.duration - 10, 5); // -10 Mins, 5 mins minimum
         } else if (response.toLocaleLowerCase().includes("easy")){
             habit.duration += 10;
         }
 
+        //Dificulty Updating
         if (habit.duration <= 10) {
             habit.difficulty = "easy";
         } else if (habit.duration <= 30) {
@@ -250,11 +272,13 @@ document.addEventListener("DOMContentLoaded", function(){
         habit.text =  `${capitalize(habit.base)} for ${habit.duration} mins`;
         saveHabits();
         renderHabits();
+        alert("Habits Updated!");
     }
+
     window.giveFeedback = giveFeedback;
 
     function capitalize(str) {
-        return str.char(0).toUpperCase() + str.slice(1);
+        return str.charAt(0).toUpperCase() + str.slice(1);
     }
         
     function resetXP() {
@@ -294,81 +318,87 @@ document.addEventListener("DOMContentLoaded", function(){
     });
 
     //Resets habit after timer 
-    function checkDailyReset(){
-        const now = new Date() // Now = current date
-        const today = now.toDateString(); //Date = String, eg. Fri Jun 27 2025
+ function checkDailyReset() {
+    const now = new Date();
+    const today = now.toDateString();
 
-        const lastReset = localStorage.getItem("lastReset") || null; //loads 
-    
+    const lastReset = localStorage.getItem("lastReset");
 
-        if (lastReset !== today){
-            habits.forEach(habit => {
-                if(habit.type === "daily"){
-                    habit.done = false;
-                }
-            });
+    if (lastReset !== today) {
+        habits.forEach(habit => {
+            if (habit.type === "daily") {
+                habit.done = false;
+            }
+        });
 
-            lastReset = today;
-            localStorage.setItem("lastReset", today);
-            saveHabits();
-            renderHabits();
-        }
+        localStorage.setItem("lastReset", today);
+        saveHabits();
+        renderHabits();
+    }
+}
+
+function startResetCountdown() {
+    function getNextResetTime() {
+        const now = new Date();
+        const resetTime = new Date();
+        resetTime.setHours(0, 0, 0, 0); // midnight tonight
+        resetTime.setDate(resetTime.getDate() + 1); // next day
+        return resetTime;
     }
 
-    function startResetCountdown() {
-        function getNextResetTime() {
-            const now = new Date();
-            const resetTime = new Date(now);
-            resetTime.setHours(24,0,0,0);
+    let resetTime = getNextResetTime();
 
-            if (resetTime <= now){
-                resetTime.setDate(resetTime.getDate() + 1);
-            }
-            
-            return resetTime;
+    function updateCountdown() {
+        const now = new Date();
+        let diff = resetTime - now;
+
+        if (diff <= 0) {
+            checkDailyReset();
+            resetTime = getNextResetTime(); // refresh the reset time
+            diff = resetTime - now;         // recalculate diff
         }
 
-        let resetTime = getNextResetTime();
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        const minutes = Math.floor((diff / (1000 * 60)) % 60);
+        const seconds = Math.floor((diff / 1000) % 60);
 
-        function updateCountdown() {
-            const now = new Date();
-            const diff = resetTime - now;
+        const display = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+        const timerSpan = document.getElementById("reset-timer");
+        if (timerSpan) timerSpan.textContent = display;
+    }
 
-            if(diff <= 0) {
-                 checkDailyReset();
-                 resetTime = getNextResetTime();
-            }
+    function pad(num) {
+        return num.toString().padStart(2, '0');
+    }
 
-            const hours = Math.floor(diff / 1000 /60 /60);
-            const minutes = Math.floor((diff /1000 /60) % 60);
-            const seconds = Math.floor((diff / 1000) % 60);
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+}
 
-            const display = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
-            const timerSpan = document.getElementById("reset-timer");
-            if(timerSpan) timerSpan.textContent = display;
-        }
-
-        function pad(num){
-            return num.toString().padStart(2, "0");
-        }
-
-        updateCountdown();
-        setInterval(updateCountdown, 1000);
-        }
     
     // Making Functions Global
     checkDailyReset();
     startResetCountdown();
     
-    //2nd feedback Function (testing lol)
+    //Not in Use! 2nd feedback Function (testing lol)
     function giveFeedbackAI() {
-        console.log("Feedback Button Clicked");
-
         habits.forEach((habit, index) => {
-            if (!habit.base || !habit.duration) return;
 
             const response = prompt(`How was "${habit.text}"? (Easy/ Hard / Just right)`);
             if (!response) return;
+
+            //Checks if Base/Duration is missing, tries to parse
+            if(!habit.base || !habit.duration) {
+                const parsed = parseHabit(habit.text);
+                habit.base = parsed.base;
+                habit.duration = parsed.duration;
+            }
+
+            if(response.toLowerCase().includes("hard")) {
+                habit.duration = Math.max(habit.duration - 10, 5);
+            } else if (response.toLowerCase().includes("easy")){
+                habit.duration += 10;
+            }
 
             const lower = response.toLowerCase();
 
@@ -387,13 +417,12 @@ document.addEventListener("DOMContentLoaded", function(){
                 habit.difficulty = "hard";
             }
 
-            // Update habit text
-            habit.text = `${habit.base} for ${habit.duration} mins`;
-        });
-
+        });        
+        // Update habit text
+        habit.text = `${habit.base} for ${habit.duration} mins`;
         saveHabits();
         renderHabits();
         alert("Habits updated!");
     }
-    window.giveFeedbackAI = giveFeedbackAI;
+
 });  
