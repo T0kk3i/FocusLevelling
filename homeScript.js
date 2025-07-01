@@ -192,6 +192,8 @@ document.addEventListener("DOMContentLoaded", function(){
             }
         });
     }
+    
+    window.renderHabits = renderHabits;
 
     //AI Recommendations
     function startAISetup() {
@@ -230,7 +232,7 @@ document.addEventListener("DOMContentLoaded", function(){
         if (suggestions.length == 0) {
             alert("Sorry, I didn't detect any goals. Try again with specific terms: like gym/study/read");
         } else {
-            suggestions.forEach(habit => habits.push({ text: habit, done: false}));
+            suggestions.forEach(habit => habits.push({ text: habit, done: false, type: "daily"}));
             saveHabits();
             renderHabits();
             alert("Starter Habits Have Been Added Based on Goals!");
@@ -379,6 +381,7 @@ document.addEventListener("DOMContentLoaded", function(){
         renderHabits();
     }
 }
+window.checkDailyReset = checkDailyReset;
 
 function startResetCountdown() {
     function getNextResetTime() {
