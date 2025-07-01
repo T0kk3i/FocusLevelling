@@ -72,10 +72,25 @@ document.addEventListener("DOMContentLoaded", function(){
 
     //Stripping Habit into Parts 
     function parseHabit(text){
-        const match = text.match(/(\d+)\s*mins?/i);
-        const duration = match ? parseInt(match[1]) : 15;
-        const base = text.replace(/for\s+\d+\s*mins?/i, "").trim();
-        return { base, duration };
+        const numberMatch = text.match(/(\d+)/); //Find any number
+        const amount = numberMatch ? parseInt(numberMatch[1]) : 1;
+
+        const lowerText = text.toLowerCase();
+
+        let unit = "generic";
+        if (lowerText.includes("min")){
+            unit = "time";
+        } else if (lowerText.includes("chapter") || lowerText.includes("page") || lowerText.includes("read")){
+            unit = "reading";
+        } 
+
+        const base = text.replace(/(\d+\s*\w*)/i, "").trim(); 
+
+        return {
+            base, 
+            duration: amount,
+            unit
+        };
 
     }
 
@@ -269,7 +284,16 @@ document.addEventListener("DOMContentLoaded", function(){
             habit.difficulty = "hard";
         }
 
-        habit.text =  `${capitalize(habit.base)} for ${habit.duration} mins`;
+        //Formatting Logic
+        const {unit} = parseHabit(habit.text);
+        if (unit === "reading") {
+            habit.text = `${capitalize(habit.base)} ${habit.duration} chapters`;
+        } else if (unit === "time"){
+            habit.text = `${capitalize(habit.base)} for ${habit.duration} mins`;
+        } else {
+            habit.text = `${capitalize(habit.base)} ${habit.duration}`;
+        }
+
         saveHabits();
         renderHabits();
         alert("Habits Updated!");
