@@ -86,11 +86,7 @@ document.addEventListener("DOMContentLoaded", function(){
 
         const base = text.replace(/(\d+\s*\w*)/i, "").trim(); 
 
-        return {
-            base, 
-            duration: amount,
-            unit
-        };
+        return {base, duration: amount,unit};
 
     }
 
@@ -172,7 +168,7 @@ document.addEventListener("DOMContentLoaded", function(){
 
             //New Feedback Button 
             const feedbackBtn = document.createElement("button");
-            feedbackBtn.className = "feedback";
+            feedbackBtn.className = "feedback-btn";
             feedbackBtn.textContent = "Feedback";
             feedbackBtn.onclick = () => giveFeedback(habits[index], index);
 
@@ -251,28 +247,45 @@ document.addEventListener("DOMContentLoaded", function(){
     //1st Feedback Function
 
     function giveFeedback(habit, index) {
+        const response = prompt("How was the habit?");
+
+        //Grab base/duration
+        if(!habit.base || !habit.duration) {
+            const parsed = parseHabit(habit.text);
+            habit.base = parsed.base;
+            habit.duration = parsed.duration;
+        }
+
+        //Testing Logs
         console.log("GIVE FEEDBACK TRIGGERED");
         console.log("Habit passed in:", habit);
         console.log("Index passed in:", index);
         console.log("Habit base:", habit.base);
         console.log("Habit duration:", habit.duration);
         console.log("Habit text:", habit.text);
-
-        const response = prompt("How was the habit?");
-
-        if(!habit.base || !habit.duration) {
-            const parsed = parseHabit(habit.text);
-            habit.base = parsed.base;
-            habit.duration = parsed.duration;
-        }
         console.log("Parsed habit:", habit.base, habit.duration);
+
+        //Duration Updating based on Habits
+        const limits = {
+            reading: { min: 1, max: 50, step: 1},
+            time: {min: 5, max: 120, step: 10}
+        };
+
+        const parsed = parseHabit(habit.text);
+        habit.base = habit.base || parsed.base;
+        habit.duration = habit.duration || parsed.duration;
+
+        let unit = (habit.unit || parsed.unit || "time").toLowerCase();
+        const rule = limits[unit];
+        console.log("Unit:", unit);
+
 
 
         //Duration Updating
         if(response.toLowerCase().includes("hard")){
-            habit.duration = Math.max(habit.duration - 10, 5); // -10 Mins, 5 mins minimum
+            habit.duration = Math.max(habit.duration - rule.step, rule.min); // -10 Mins, 5 mins minimum
         } else if (response.toLocaleLowerCase().includes("easy")){
-            habit.duration += 10;
+            habit.duration = Math.min(habit.duration += rule.step, rule.max);
         }
 
         //Dificulty Updating
@@ -285,7 +298,6 @@ document.addEventListener("DOMContentLoaded", function(){
         }
 
         //Formatting Logic
-        const {unit} = parseHabit(habit.text);
         if (unit === "reading") {
             habit.text = `${capitalize(habit.base)} ${habit.duration} chapters`;
         } else if (unit === "time"){

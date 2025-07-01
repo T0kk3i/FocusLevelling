@@ -201,11 +201,18 @@ select {
     cursor: pointer;
 }
 
-.habit .feedbackbtn {
-    color: red;
-    padding: 4px 8px;
+.feedback-btn {
+    font-size: 14px;
+    padding: 6px 8px;
     border-radius: 6px;
-    
+    margin-left: 6px;
+    transition: background-color 0.2s;
+
+
+}
+
+.feedback-btn:hover {
+    background-color: #828181;
 }
 
 .modal {
