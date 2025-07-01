@@ -42,6 +42,13 @@ document.addEventListener("DOMContentLoaded", function(){
         saveHabits();
         updateXPBar();
         renderHabits();
+
+        //to-do habits gets deleted after marked, with delay
+        if(habits[index] && habits[index].type === "todo" && habits[index].done){
+            setTimeout(() => {
+                deleteHabit(index);
+            }, 2000); //2s delay
+        }
     } 
 
     function updateXPBar() {
@@ -267,7 +274,7 @@ document.addEventListener("DOMContentLoaded", function(){
 
         //Duration Updating based on Habits
         const limits = {
-            reading: { min: 1, max: 50, step: 1},
+            readin: { min: 1, max: 10, step: 2},
             time: {min: 5, max: 120, step: 10}
         };
 
@@ -276,7 +283,7 @@ document.addEventListener("DOMContentLoaded", function(){
         habit.duration = habit.duration || parsed.duration;
 
         let unit = (habit.unit || parsed.unit || "time").toLowerCase();
-        const rule = limits[unit];
+        const rule = limits[unit] || limits["time"];
         console.log("Unit:", unit);
 
 
