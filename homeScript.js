@@ -173,16 +173,20 @@ document.addEventListener("DOMContentLoaded", function(){
             deleteBtn.textContent = "Delete";
             deleteBtn.onclick = () => deleteHabit(index);
 
-            //New Feedback Button 
-            const feedbackBtn = document.createElement("button");
-            feedbackBtn.className = "feedback-btn";
-            feedbackBtn.textContent = "Feedback";
-            feedbackBtn.onclick = () => giveFeedback(habits[index], index);
 
             div.appendChild(checkbox);
             div.appendChild(label);
             div.appendChild(deleteBtn);
-            div.appendChild(feedbackBtn);
+
+            //New Feedback Button 
+            if (habit.type === "daily") {
+                const feedbackBtn = document.createElement("button");
+                feedbackBtn.className = "feedback-btn";
+                feedbackBtn.textContent = "Feedback";
+                feedbackBtn.onclick = () => giveFeedback(habits[index], index);         
+                div.appendChild(feedbackBtn);
+
+            }
 
             //List
             if (habit.type === "todo") {
@@ -379,12 +383,12 @@ document.addEventListener("DOMContentLoaded", function(){
                         if(currentRankIndex > 0){
                             currentRankIndex--; //Rank Drop 1
                             xp = 90; //Xp 90 full
-                            console.log(`New rank ${ranks[currentRankIndex]}`);
+                            console.log(`New rank ${ranks[currentRankIndex]}`); //testing (Rank lost)
                         } else {
-                            xp = 0;
+                            xp = 0; 
                         }
                     }
-                    console.log(`Lost ${xpLoss} XP for missing: ${habit.text}`); //test
+                    console.log(`Lost ${xpLoss} XP for missing: ${habit.text}`); //Test XP loss
                 }
                 habit.done = false;
             }
@@ -479,11 +483,51 @@ function startResetCountdown() {
             }
 
         });        
+        
         // Update habit text
         habit.text = `${habit.base} for ${habit.duration} mins`;
         saveHabits();
         renderHabits();
         alert("Habits updated!");
     }
+
+    const ctx = document.getElementById("statChart").getContext('2d');
+    const statXP = {
+        INT: 70,
+        STR: 40,
+        DEX: 30, 
+        CHA: 50,
+        WIS: 60,
+        CON: 20
+    };
+
+    //Radar Skill Tree
+    const statChart = new Chart(ctx,  {
+        type: 'radar',
+        data: {
+            labels: Object.keys(statXP), //
+            datasets: [{
+                label: 'Player Stats',
+                data: Object.values(statXP), //
+                fill: true,
+                backgroundColor: 'rgba(0, 128, 255, 0.2)',
+                borderColor: 'rgba(0, 128, 255, 1)',
+                pointBackgroundColor: 'rgba(0, 128, 255, 1)',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: 'rgba(0,128,255,1)'
+            }]
+        },
+        options: {
+            responsive: true, 
+            scales: {
+                r: {
+                    angleLines: {display: true},
+                    min: 0,
+                    max: 100
+                }
+            }
+        }
+    });
 
 });  

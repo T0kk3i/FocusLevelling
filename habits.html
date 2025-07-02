@@ -5,6 +5,8 @@
     <link rel="stylesheet" href="homeStyle.css"/>
 </head>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <body>
 
 <!--AI Modal Prompt Button + Closing Button-->
@@ -39,6 +41,7 @@
         <p>XP: <span id="sidebar-xp">0</span>/100</p>
         <p>Rank:<span id="sidebar-level">E</span></p>
         <button onclick="resetXP()">Reset</button>
+        <canvas id="statChart" width="400" height="400"></canvas>
     </div>
 </div>
 
